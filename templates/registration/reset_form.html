@@ -1,0 +1,11 @@
+{% extends "registration/auth_base.html" %}
+{% block title %}Mot de passe oublié{% endblock %}
+{% block auth %}
+<h3 style="color:var(--navy-950)">Réinitialiser le mot de passe</h3>
+<p class="sub" style="margin-bottom:16px">Saisissez l'e-mail du compte : vous recevrez un lien valable 3 jours.</p>
+<form method="post">{% csrf_token %}
+  <div class="field"><label for="id_email">E-mail</label>{{ form.email }}{{ form.email.errors }}</div>
+  <button class="btn btn-navy btn-block" style="padding:14px">Envoyer le lien</button>
+</form>
+<p style="text-align:center;margin-top:14px"><a class="link" href="{% url 'login' %}">← Retour à la connexion</a></p>
+{% endblock %}

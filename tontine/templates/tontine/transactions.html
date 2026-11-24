@@ -1,0 +1,28 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Transactions{% endblock %}{% block heading %}Transactions{% endblock %}
+{% block content %}
+<div class="grid g-4">
+  <div class="kpi kpi-gold" style="min-height:112px"><div class="label">Cotisations reçues</div><div class="value" style="font-size:22px">{{ totaux.collecte|fcfa }}</div></div>
+  <div class="kpi kpi-pearl" style="min-height:112px"><div class="label">Sommes distribuées</div><div class="value" style="font-size:22px">{{ totaux.distribue|fcfa }}</div></div>
+  <div class="kpi kpi-amber" style="min-height:112px"><div class="label">Dépenses autorisées</div><div class="value" style="font-size:22px">{{ totaux.depenses|fcfa }}</div></div>
+  <div class="kpi kpi-navy" style="min-height:112px"><div class="label">Solde de caisse</div><div class="value" style="font-size:22px">{{ totaux.solde_caisse|fcfa }}</div></div>
+</div>
+<div class="grid g-form mt">
+  <form method="post" class="panel">{% csrf_token %}
+    <h3>Dépense ou correction</h3>
+    <p class="sub" style="margin-bottom:14px">Montant négatif pour une sortie de caisse (ex. −500 de frais Wave). Pour corriger une cotisation, annulez-la depuis son reçu.</p>
+    <div class="form-grid two">{% include "tontine/partials/form_fields.html" %}</div>
+    <div class="form-actions"><button class="btn btn-navy"><i class="fa-solid fa-check"></i>Enregistrer</button></div>
+  </form>
+  <div class="panel flush">
+    <div class="panel-head"><h3>Toutes les opérations</h3><a href="{% url 'export' 'cotisations' 'xlsx' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-file-excel"></i>Excel</a></div>
+    <div class="table-wrap" style="max-height:560px"><table>
+      <thead><tr><th>Date</th><th>Type</th><th>Libellé</th><th>Référence</th><th class="num">Montant</th></tr></thead>
+      <tbody>{% for l in lignes %}<tr><td>{{ l.date|date:"d/m/Y" }}</td><td><span class="badge {% if 'Distribution' in l.type %}b-navy{% elif 'annulée' in l.type or 'Correction' in l.type %}b-bad{% elif 'Dépense' in l.type %}b-warn{% else %}b-ok{% endif %}">{{ l.type }}</span></td>
+        <td>{% if l.url %}<a href="{{ l.url }}" class="strong">{{ l.libelle }}</a>{% else %}{{ l.libelle }}{% endif %}<div class="small mono">{{ l.extra|default:"" }}</div></td><td class="mono">{{ l.ref }}</td>
+        <td class="num {% if l.montant < 0 %}neg{% elif l.montant > 0 %}pos{% endif %}">{% if l.info != None %}<span class="small">({{ l.info|fcfa }})</span>{% else %}{{ l.montant|fcfa }}{% endif %}</td></tr>
+      {% empty %}<tr><td colspan="5" class="empty">Aucune opération pour l'instant.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+</div>
+{% endblock %}

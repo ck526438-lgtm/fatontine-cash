@@ -1,0 +1,12 @@
+{% extends "registration/auth_base.html" %}
+{% block title %}Connexion{% endblock %}
+{% block auth %}
+{% if verrouille %}<div class="callout bad" style="margin-bottom:14px"><i class="fa-solid fa-lock"></i><div>{{ message_blocage }}</div></div>
+{% elif form.errors %}<div class="callout bad" style="margin-bottom:14px"><i class="fa-solid fa-shield-halved"></i><div>Identifiant ou mot de passe incorrect.{% if tentatives_restantes is not None %} {{ tentatives_restantes }} tentative{{ tentatives_restantes|pluralize }} restante{{ tentatives_restantes|pluralize }} avant blocage temporaire.{% endif %}</div></div>{% endif %}
+<form method="post">{% csrf_token %}
+  <div class="field"><label for="id_username">Identifiant</label>{{ form.username }}</div>
+  <div class="field"><div class="row"><label for="id_password">Mot de passe</label><a href="{% url 'password_reset' %}" class="link" style="font-size:11.5px;margin-bottom:5px">Mot de passe oublié ?</a></div>{{ form.password }}</div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn btn-navy btn-block" style="padding:15px;margin-top:6px" {% if verrouille %}disabled{% endif %}>Ouvrir mon espace <i class="fa-solid fa-arrow-right"></i></button>
+</form>
+{% endblock %}

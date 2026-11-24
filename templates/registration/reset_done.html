@@ -1,0 +1,4 @@
+{% extends "registration/auth_base.html" %}
+{% block title %}Lien envoyé{% endblock %}
+{% block auth %}<div class="callout info"><i class="fa-solid fa-envelope-circle-check"></i><div>Si un compte correspond à cet e-mail, un lien de réinitialisation vient d'être envoyé. Pensez à vérifier les indésirables.</div></div>
+<p style="text-align:center;margin-top:14px"><a class="link" href="{% url 'login' %}">← Retour à la connexion</a></p>{% endblock %}

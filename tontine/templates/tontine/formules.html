@@ -1,0 +1,24 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Formules{% endblock %}{% block heading %}Formules de tontine{% endblock %}
+{% block content %}
+<div class="grid g-form">
+  <form method="post" class="panel">{% csrf_token %}
+    <h3>{% if instance %}Modifier {{ instance.code }}{% else %}Ajouter une formule{% endif %}</h3>
+    <p class="sub" style="margin-bottom:14px">Les groupes existants gardent la formule avec laquelle ils ont été créés.</p>
+    <div class="form-grid two">{% include "tontine/partials/form_fields.html" %}</div>
+    <div class="form-actions">{% if instance %}<a href="{% url 'formules' %}" class="btn btn-ghost">Annuler</a>{% endif %}<button class="btn btn-navy"><i class="fa-solid fa-check"></i>Enregistrer</button></div>
+  </form>
+  <div class="panel flush">
+    <div class="panel-head"><h3>Grille et vérification des calculs</h3><span class="small">Base : {{ parametres.taille_groupe }} membres × {{ parametres.jours_par_tour }} jours</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Code</th><th class="num">Cotisation/jour</th><th class="num">Collecte par tour</th><th class="num">Réception annoncée</th><th class="num">Frais de gestion / tour</th><th></th></tr></thead>
+      <tbody>{% for f in formules %}<tr><td class="strong">{{ f.code }}{% if not f.active %} <span class="badge b-mute">inactive</span>{% endif %}</td>
+        <td class="num">{{ f.cotisation_journaliere|fcfa }}</td><td class="num">{{ f.collecte_theorique|fcfa }}</td><td class="num strong">{{ f.reception_annoncee|fcfa }}</td>
+        <td class="num"><b style="color:var(--gold-600)">{{ f.frais_gestion|fcfa }}</b><div class="small">{{ f.taux_gestion_pct }} % de la collecte</div></td>
+        <td class="num"><a class="link" href="?modifier={{ f.pk }}">Modifier</a></td></tr>
+      {% empty %}<tr><td colspan="6" class="empty">Aucune formule. Lancez <span class="mono">python manage.py init_fatontine</span> pour charger la grille officielle.</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <div style="padding:16px 22px"><div class="callout"><i class="fa-solid fa-scale-balanced"></i><div><b>Point à valider avec Fatima (§13)</b> : collecte théorique d'un tour = cotisation × {{ parametres.taille_groupe }} membres × {{ parametres.jours_par_tour }} jours. Avec la grille de l'affiche, la réception représente <b>10/11 de la collecte (≈ 90,91 %)</b>, et non 90 % comme l'indique le cahier des charges : les frais de gestion valent 1/11 de la collecte, soit 10 % du montant reçu. La plateforme calcule la répartition directement à partir de chaque formule.</div></div></div>
+  </div>
+</div>
+{% endblock %}

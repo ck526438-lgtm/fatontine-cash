@@ -1,0 +1,30 @@
+{% extends "tontine/base.html" %}
+{% block title %}Nouvelle inscription{% endblock %}{% block heading %}Nouvelle inscription{% endblock %}
+{% block content %}
+<form method="post" enctype="multipart/form-data" class="panel" novalidate>{% csrf_token %}
+  <h3>Formulaire d'adhésion — FATONTINE CASH</h3>
+  <p class="sub" style="margin-bottom:20px">Le dossier sera enregistré « En attente ». Aucun membre n'est intégré à un groupe avant votre validation manuelle.</p>
+  {% if form.non_field_errors %}<div class="callout bad" style="margin-bottom:14px"><i class="fa-solid fa-circle-exclamation"></i><div>{{ form.non_field_errors|join:" " }}</div></div>{% endif %}
+  <h4 style="margin-bottom:12px">Informations personnelles</h4>
+  <div class="form-grid">
+    {% for field in form %}{% if field.name in "nom prenoms sexe date_naissance telephone adresse" %}{% include "tontine/partials/field.html" %}{% endif %}{% endfor %}
+  </div>
+  <h4 style="margin:22px 0 12px">Pièces justificatives</h4>
+  <div class="form-grid">
+    {% for field in form %}{% if field.name in "type_piece numero_piece fichier_piece photo formule_souhaitee" %}{% include "tontine/partials/field.html" %}{% endif %}{% endfor %}
+  </div>
+  <h4 style="margin:22px 0 12px">Témoin</h4>
+  <div class="form-grid">
+    {% include "tontine/partials/field.html" with field=form.temoin_nom %}
+    {% include "tontine/partials/field.html" with field=form.temoin_telephone %}
+  </div>
+  <div style="margin-top:18px">
+    <label class="check-row">{{ form.consentement }}<span>Consentement (loi ivoirienne n° 2013-450, ARTCI) : la personne autorise FATONTINE CASH à vérifier et conserver de façon sécurisée ses pièces d'identité, pour la durée de sa participation puis {{ parametres.conservation_pieces_mois }} mois maximum.</span></label>
+    {{ form.consentement.errors }}
+  </div>
+  <div class="form-actions">
+    <a href="{% url 'inscriptions' %}" class="btn btn-ghost">Annuler</a>
+    <button class="btn btn-navy"><i class="fa-solid fa-paper-plane"></i>Enregistrer la demande d'adhésion</button>
+  </div>
+</form>
+{% endblock %}

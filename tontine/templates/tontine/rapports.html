@@ -1,0 +1,46 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Rapports{% endblock %}{% block heading %}Rapports &amp; exports{% endblock %}
+{% block content %}
+<div class="panel">
+  <form method="get" class="row" style="flex-wrap:wrap;gap:12px">
+    <div><h3>Rapport de période</h3><p class="sub">Du {{ debut|date:"d/m/Y" }}{% if fin != debut %} au {{ fin|date:"d/m/Y" }}{% endif %}</p></div>
+    <div class="row" style="gap:8px;flex-wrap:wrap">
+      <div class="segmented">
+        <a href="?periode=jour&date={{ ref|date:'Y-m-d' }}" class="{% if type_p == 'jour' %}is-active{% endif %}">Journalier</a>
+        <a href="?periode=semaine&date={{ ref|date:'Y-m-d' }}" class="{% if type_p == 'semaine' %}is-active{% endif %}">Hebdomadaire</a>
+        <a href="?periode=mois&date={{ ref|date:'Y-m-d' }}" class="{% if type_p == 'mois' %}is-active{% endif %}">Mensuel</a>
+      </div>
+      <input type="hidden" name="periode" value="{{ type_p }}">
+      <input type="date" name="date" value="{{ ref|date:'Y-m-d' }}" class="g-input" style="width:auto;border-radius:999px" onchange="this.form.submit()">
+      <a href="{% url 'export' 'periode' 'pdf' %}?periode={{ type_p }}&date={{ ref|date:'Y-m-d' }}" target="_blank" class="btn btn-navy btn-sm"><i class="fa-solid fa-file-pdf"></i>PDF</a>
+      <a href="{% url 'export' 'periode' 'xlsx' %}?periode={{ type_p }}&date={{ ref|date:'Y-m-d' }}" class="btn btn-ok btn-sm"><i class="fa-solid fa-file-excel"></i>Excel</a>
+    </div>
+  </form>
+  <div class="grid g-4 mt">
+    <div class="kpi kpi-gold" style="min-height:104px"><div class="label">Encaissé ({{ data.nb }} op.)</div><div class="value" style="font-size:22px">{{ data.collecte|fcfa }}</div><div class="meta">Wave {{ data.wave|fcfa }} · Espèces {{ data.especes|fcfa }}</div></div>
+    <div class="kpi kpi-pearl" style="min-height:104px"><div class="label">Distribué</div><div class="value" style="font-size:22px">{{ data.distribue|fcfa }}</div></div>
+    <div class="kpi kpi-amber" style="min-height:104px"><div class="label">Dépenses</div><div class="value" style="font-size:22px">{{ data.total_depenses|fcfa }}</div><div class="meta">{{ data.annulees }} annulation{{ data.annulees|pluralize }}</div></div>
+    <div class="kpi kpi-navy" style="min-height:104px"><div class="label">Solde de la période</div><div class="value" style="font-size:22px">{{ data.solde|fcfa }}</div></div>
+  </div>
+</div>
+
+<div class="grid g-3 mt">
+  <div class="panel"><h3>Rapport des retards</h3><p class="sub">Membres en retard, montants dus et témoins.</p><div class="form-actions" style="justify-content:flex-start"><a href="{% url 'export' 'retards' 'pdf' %}" target="_blank" class="btn btn-navy btn-sm">PDF</a><a href="{% url 'export' 'retards' 'xlsx' %}" class="btn btn-ok btn-sm">Excel</a></div></div>
+  <div class="panel"><h3>Bilan des distributions</h3><p class="sub">Tours programmés et remis, avec confirmations.</p><div class="form-actions" style="justify-content:flex-start"><a href="{% url 'export' 'distributions' 'pdf' %}" target="_blank" class="btn btn-navy btn-sm">PDF</a><a href="{% url 'export' 'distributions' 'xlsx' %}" class="btn btn-ok btn-sm">Excel</a></div></div>
+  <div class="panel"><h3>Historique individuel</h3>
+    <form method="get" action="{% url 'export' 'membre' 'pdf' %}" target="_blank" class="mt-sm"><select name="membre" class="g-input" required>{% for m in membres %}<option value="{{ m.pk }}">{{ m.nom_complet }}</option>{% empty %}<option value="">Aucun membre</option>{% endfor %}</select>
+      <div class="form-actions" style="justify-content:flex-start"><button class="btn btn-navy btn-sm" {% if not membres %}disabled{% endif %}>PDF</button><button class="btn btn-ok btn-sm" formaction="{% url 'export' 'membre' 'xlsx' %}" formtarget="_self" {% if not membres %}disabled{% endif %}>Excel</button></div></form></div>
+</div>
+
+<div class="panel flush mt">
+  <div class="panel-head"><h3>Bilan par groupe (part bénéficiaires / frais de gestion selon la formule)</h3><a href="{% url 'export' 'cotisations' 'xlsx' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-file-excel"></i>Toutes les cotisations</a></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Groupe</th><th class="num">Cotisation/jour</th><th class="num">Attendu à date</th><th class="num">Collecté</th><th class="num">Écart</th><th class="num">Part bénéf.</th><th class="num">Part gestion</th><th class="num">Distribué</th><th class="num">Export</th></tr></thead>
+    <tbody>{% for b in bilan_groupes %}<tr><td><a class="strong" href="{% url 'groupe_detail' b.g.pk %}">{{ b.g.nom }}</a><div class="small">{{ b.progression }} % du cycle</div></td>
+      <td class="num">{{ b.g.formule.cotisation_journaliere|fcfa }}</td><td class="num">{{ b.attendu|fcfa }}</td><td class="num strong">{{ b.collecte|fcfa }}</td>
+      <td class="num {% if b.ecart > 0 %}neg{% endif %}">{{ b.ecart|fcfa }}</td><td class="num pos">{{ b.beneficiaires|fcfa }}</td><td class="num" style="color:var(--gold-600);font-weight:800">{{ b.gestion|fcfa }}</td><td class="num">{{ b.distribue|fcfa }}</td>
+      <td class="num"><a class="link" href="{% url 'export' 'groupe' 'pdf' %}?groupe={{ b.g.pk }}" target="_blank">PDF</a> · <a class="link" href="{% url 'export' 'groupe' 'xlsx' %}?groupe={{ b.g.pk }}">Excel</a></td></tr>
+    {% empty %}<tr><td colspan="9" class="empty">Aucun groupe à synthétiser pour l'instant.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

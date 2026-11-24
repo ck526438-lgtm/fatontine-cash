@@ -1,0 +1,26 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}{{ g.nom }}{% endblock %}{% block heading %}{{ g.nom }}{% endblock %}
+{% block actions %}<a href="{% url 'groupe_modifier' g.pk %}" class="btn btn-ghost"><i class="fa-solid fa-pen"></i>Modifier</a><a href="{% url 'export' 'groupe' 'pdf' %}?groupe={{ g.pk }}" class="btn btn-ghost hide-sm" target="_blank"><i class="fa-solid fa-file-pdf"></i>Bilan PDF</a>{% endblock %}
+{% block content %}
+<div class="grid g-4">
+  <div class="kpi kpi-gold" style="min-height:120px"><div class="label">Membres</div><div class="value">{{ g.places_occupees }}/{{ g.capacite }}</div><div class="meta">{{ g.get_statut_display }}</div></div>
+  <div class="kpi kpi-navy" style="min-height:120px"><div class="label">Collecté</div><div class="value" style="font-size:24px">{{ collecte|fcfa }}</div><div class="meta">Attendu sur le cycle : {{ theorique_cycle|fcfa }}</div></div>
+  <div class="kpi kpi-pearl" style="min-height:120px"><div class="label">Distribué</div><div class="value" style="font-size:24px">{{ distribue|fcfa }}</div><div class="meta small">{{ g.formule.reception_annoncee|fcfa }} par tour</div></div>
+  <div class="kpi kpi-amber" style="min-height:120px"><div class="label">Progression</div><div class="value">{{ g.progression }}%</div><div class="meta">Tour {{ g.tour_courant }} · fin le {{ g.date_fin|date:"d/m/Y" }}</div></div>
+</div>
+<div class="panel flush mt">
+  <div class="panel-head"><h3>Membres et soldes</h3><span class="small">Formule : {{ g.formule }}</span></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Membre</th><th>Tour</th><th class="num">Attendu</th><th class="num">Versé</th><th class="num">Écart</th><th>Statut</th></tr></thead>
+    <tbody>
+    {% for l in membres %}
+      <tr><td><a href="{% url 'membre_detail' l.m.pk %}" class="strong">{{ l.m.nom_complet }}</a><div class="small">{{ l.m.telephone }}</div></td>
+        <td>{% if l.tour %}<a class="link" href="{% url 'tour_detail' l.tour.pk %}">#{{ l.tour.rang }} · {{ l.tour.date_prevue|date:"d/m" }}</a>{% endif %}</td>
+        <td class="num">{{ l.m.attendu|fcfa }}</td><td class="num pos">{{ l.verse|fcfa }}</td>
+        <td class="num {% if l.ecart > 0 %}neg{% else %}pos{% endif %}">{% if l.ecart > 0 %}−{{ l.ecart|fcfa }}{% elif l.ecart < 0 %}+{{ l.ecart|absolu|fcfa }} d'avance{% else %}À jour{% endif %}</td>
+        <td>{% include "tontine/partials/statut_badge.html" with s=l.m.statut label=l.m.get_statut_display %}</td></tr>
+    {% empty %}<tr><td colspan="6" class="empty">Aucun membre validé dans ce groupe. Validez un dossier d'inscription pour l'y intégrer.</td></tr>{% endfor %}
+    </tbody></table></div>
+</div>
+{% if g.notes %}<div class="panel mt"><h4>Notes</h4><p class="sub">{{ g.notes|linebreaksbr }}</p></div>{% endif %}
+{% endblock %}

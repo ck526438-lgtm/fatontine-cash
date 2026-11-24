@@ -1,0 +1,11 @@
+{% extends "tontine/base.html" %}
+{% block title %}{% if groupe %}Modifier {{ groupe }}{% else %}Nouveau groupe{% endif %}{% endblock %}
+{% block heading %}{% if groupe %}Modifier le groupe{% else %}Nouveau groupe{% endif %}{% endblock %}
+{% block content %}
+<form method="post" class="panel" style="max-width:860px">{% csrf_token %}
+  <h3>{% if groupe %}{{ groupe.nom }}{% else %}Créer un groupe de tontine{% endif %}</h3>
+  <p class="sub" style="margin-bottom:18px">Durée du cycle = participants × jours entre deux distributions (10 × 10 = 100 jours par défaut). Le bénéficiaire n°1 reçoit le 10ᵉ jour.</p>
+  <div class="form-grid two">{% include "tontine/partials/form_fields.html" %}</div>
+  <div class="form-actions"><a href="{% if groupe %}{% url 'groupe_detail' groupe.pk %}{% else %}{% url 'groupes' %}{% endif %}" class="btn btn-ghost">Annuler</a><button class="btn btn-navy"><i class="fa-solid fa-check"></i>Enregistrer</button></div>
+</form>
+{% endblock %}

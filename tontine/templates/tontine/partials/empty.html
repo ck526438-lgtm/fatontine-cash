@@ -1,0 +1,6 @@
+<div class="empty">
+  <div class="ico"><i class="fa-solid {{ icon|default:'fa-inbox' }}"></i></div>
+  <h4>{{ titre }}</h4>
+  <p>{{ texte }}</p>
+  {% if lien %}<a href="{{ lien }}" class="btn btn-navy mt-sm"><i class="fa-solid fa-plus"></i>{{ lien_texte }}</a>{% endif %}
+</div>

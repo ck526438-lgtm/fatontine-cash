@@ -1,0 +1,19 @@
+{% extends "tontine/base.html" %}
+{% block title %}Paramètres{% endblock %}{% block heading %}Paramètres{% endblock %}
+{% block content %}
+<div class="grid g-form">
+  <form method="post" class="panel">{% csrf_token %}
+    <h3>Règles de fonctionnement</h3>
+    <p class="sub" style="margin-bottom:16px">Ces valeurs s'appliquent aux nouveaux groupes et aux calculs de répartition. Toute modification est inscrite au journal d'audit.</p>
+    <div class="form-grid two">{% include "tontine/partials/form_fields.html" %}</div>
+    <div class="form-actions"><button class="btn btn-navy"><i class="fa-solid fa-check"></i>Enregistrer</button></div>
+  </form>
+  <div class="stack">
+    <div class="panel"><h3>Sécurité du compte</h3>
+      <div class="mt-sm"><div class="kv"><span>Identifiant</span><b>{{ user.username }}</b></div><div class="kv"><span>E-mail de récupération</span><b>{{ user.email|default:"—" }}</b></div><div class="kv"><span>Dernière connexion</span><b>{{ user.last_login|date:"d/m/Y H:i" }}</b></div></div>
+      <div class="form-actions" style="justify-content:flex-start"><a href="{% url 'password_change' %}" class="btn btn-ghost"><i class="fa-solid fa-key"></i>Changer le mot de passe</a></div></div>
+    <div class="panel"><h3>Points à valider avec Fatima (§13)</h3>
+      <ul class="sub" style="padding-left:18px;line-height:1.8;margin-top:8px"><li>Frais de gestion : 1/11 de la collecte avec la grille actuelle (≈ 9,09 %), à confirmer (voir <a class="link" href="{% url 'formules' %}">Formules</a>)</li><li>Durée d'un cycle : {{ p.taille_groupe }} × {{ p.jours_par_tour }} jours</li><li>Règles de retard, d'abandon et de remplacement</li><li>Conditions de remboursement</li><li>Modalités de confirmation des paiements Wave</li></ul></div>
+  </div>
+</div>
+{% endblock %}

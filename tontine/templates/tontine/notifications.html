@@ -1,0 +1,17 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Notifications{% endblock %}{% block heading %}Notifications{% endblock %}
+{% block content %}
+<div class="callout info" style="margin-bottom:20px"><i class="fa-brands fa-whatsapp" style="color:#16A34A;font-size:18px"></i><div><b>Version 1 : messages prêts à envoyer.</b> Chaque bouton ouvre WhatsApp avec le message déjà rédigé ; il ne reste qu'à appuyer sur « Envoyer ». L'envoi automatique est prévu dans une évolution future.</div></div>
+<div class="grid g-2">
+  <div class="panel"><div class="row" style="margin-bottom:12px"><h4>Alertes de retard</h4><span class="badge b-bad">{{ retards|length }}</span></div>
+    <div class="stack-sm">{% for r in retards %}<div class="item"><span><b class="strong">{{ r.m.nom_complet }}</b><br><span class="small neg">{{ r.ecart|fcfa }} dus · {{ r.m.groupe }}</span></span><a href="{{ r.wa }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Alerter</a></div>{% empty %}<p class="small">Aucun retard.</p>{% endfor %}</div></div>
+  <div class="panel"><div class="row" style="margin-bottom:12px"><h4>Prochaines distributions (3 jours)</h4><span class="badge b-navy">{{ distributions|length }}</span></div>
+    <div class="stack-sm">{% for d in distributions %}<div class="item"><span><b class="strong">{{ d.t.membre.nom_complet }}</b><br><span class="small">{{ d.t.date_prevue|date:"d/m/Y" }} · {{ d.t.montant|fcfa }}</span></span><a href="{{ d.wa }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Prévenir</a></div>{% empty %}<p class="small">Aucune distribution imminente.</p>{% endfor %}</div></div>
+  <div class="panel"><div class="row" style="margin-bottom:12px"><h4>Rappels de cotisation du jour</h4><span class="badge b-warn">{{ rappels|length }}</span></div>
+    <div class="stack-sm">{% for r in rappels %}<div class="item"><span><b class="strong">{{ r.m.nom_complet }}</b><br><span class="small">{{ r.m.groupe.formule.cotisation_journaliere|fcfa }} · {{ r.m.groupe }}</span></span><a href="{{ r.wa }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Rappeler</a></div>{% empty %}<p class="small">Tous les membres actifs ont payé aujourd'hui.</p>{% endfor %}</div></div>
+  <div class="panel"><div class="row" style="margin-bottom:12px"><h4>Décisions d'inscription (7 jours)</h4><span class="badge b-ok">{{ validations|length }} · {{ refus|length }}</span></div>
+    <div class="stack-sm">{% for v in validations %}<div class="item"><span><b class="strong">{{ v.i.nom_complet }}</b><br><span class="small pos">Validée</span></span><a href="{{ v.wa }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Notifier</a></div>{% endfor %}
+    {% for r in refus %}<div class="item"><span><b class="strong">{{ r.i.nom_complet }}</b><br><span class="small neg">Refusée</span></span><a href="{{ r.wa }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Notifier</a></div>{% endfor %}
+    {% if not validations and not refus %}<p class="small">Aucune décision récente.</p>{% endif %}</div></div>
+</div>
+{% endblock %}

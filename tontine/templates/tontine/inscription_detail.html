@@ -1,0 +1,65 @@
+{% extends "tontine/base.html" %}
+{% block title %}{{ ins.nom_complet }}{% endblock %}{% block heading %}Dossier {{ ins.reference }}{% endblock %}
+{% block content %}
+<div class="grid g-form">
+  <div class="stack">
+    <div class="panel">
+      <div class="row" style="align-items:flex-start">
+        <div class="row" style="gap:12px;justify-content:flex-start"><span class="avatar navy" style="border-radius:16px;width:52px;height:52px">{{ ins.initiales }}</span>
+          <div><h3 style="font-size:17px">{{ ins.nom_complet }}</h3><p class="sub">{{ ins.get_sexe_display }} · né(e) le {{ ins.date_naissance|date:"d/m/Y" }}</p></div></div>
+        {% include "tontine/partials/statut_badge.html" with s=ins.statut label=ins.get_statut_display %}
+      </div>
+      <div class="mt">
+        <div class="kv"><span>Téléphone</span><b>{{ ins.telephone }}</b></div>
+        <div class="kv"><span>Adresse</span><b>{{ ins.adresse }}</b></div>
+        <div class="kv"><span>Pièce</span><b>{{ ins.get_type_piece_display }} · {{ ins.numero_piece }}</b></div>
+        <div class="kv"><span>Témoin</span><b>{{ ins.temoin_nom }} · {{ ins.temoin_telephone }}</b></div>
+        <div class="kv"><span>Formule souhaitée</span><b>{{ ins.formule_souhaitee }}</b></div>
+        <div class="kv"><span>Consentement ARTCI</span><b>{% if ins.consentement %}Oui, le {{ ins.consentement_le|date:"d/m/Y H:i" }}{% else %}<span class="neg">Non</span>{% endif %}</b></div>
+        {% if ins.decide_le %}<div class="kv"><span>Décision</span><b>{{ ins.get_statut_display }} le {{ ins.decide_le|date:"d/m/Y H:i" }}</b></div>{% endif %}
+        {% if ins.motif_decision %}<div class="kv"><span>Motif / observation</span><b>{{ ins.motif_decision }}</b></div>{% endif %}
+      </div>
+    </div>
+    <div class="panel">
+      <h4 style="margin-bottom:12px"><i class="fa-solid fa-lock"></i> Pièces (accès privé)</h4>
+      {% if ins.pieces_purgees_le %}
+        <div class="callout info"><i class="fa-solid fa-shield-halved"></i><div>Pièces supprimées le {{ ins.pieces_purgees_le|date:"d/m/Y" }} (fin de durée de conservation).</div></div>
+      {% else %}
+      <div class="grid g-2">
+        {% if ins.fichier_piece %}<div><a class="doc-thumb {% if ins.fichier_piece.name|slice:'-3:' == 'pdf' %}pdf{% endif %}" href="{% url 'piece_privee' ins.pk 'fichier_piece' %}" target="_blank" rel="noopener">{% if ins.fichier_piece.name|slice:'-3:' == 'pdf' %}<i class="fa-solid fa-file-pdf"></i>{% else %}<img src="{% url 'piece_privee' ins.pk 'fichier_piece' %}" alt="Pièce d'identité">{% endif %}</a><p class="small mt-sm">{{ ins.get_type_piece_display }}</p></div>{% endif %}
+        {% if ins.photo %}<div><a class="doc-thumb {% if ins.photo.name|slice:'-3:' == 'pdf' %}pdf{% endif %}" href="{% url 'piece_privee' ins.pk 'photo' %}" target="_blank" rel="noopener">{% if ins.photo.name|slice:'-3:' == 'pdf' %}<i class="fa-solid fa-file-pdf"></i>{% else %}<img src="{% url 'piece_privee' ins.pk 'photo' %}" alt="Photo du membre">{% endif %}</a><p class="small mt-sm">Photo du membre</p></div>{% endif %}
+        {% if not ins.fichier_piece and not ins.photo %}<p class="small">Aucun fichier joint.</p>{% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="stack">
+    {% if form_valider %}
+    <form method="post" action="{% url 'inscription_valider' ins.pk %}" class="panel">{% csrf_token %}
+      <h3><i class="fa-solid fa-circle-check" style="color:var(--ok)"></i> Valider et intégrer</h3>
+      <p class="sub" style="margin-bottom:14px">Le membre recevra automatiquement le prochain rang libre du groupe. Vous pourrez modifier l'ordre ensuite, avec justification.</p>
+      {% if form_valider.fields.groupe.queryset.exists %}
+        <div class="form-grid one">{% include "tontine/partials/form_fields.html" with form=form_valider %}</div>
+        <div class="form-actions"><button class="btn btn-ok"><i class="fa-solid fa-check"></i>Valider le dossier</button></div>
+      {% else %}
+        <div class="callout"><i class="fa-solid fa-triangle-exclamation"></i><div>Aucun groupe avec des places libres. <a class="link" href="{% url 'groupe_nouveau' %}">Créez un groupe</a> avant de valider ce dossier.</div></div>
+      {% endif %}
+    </form>
+    <form method="post" action="{% url 'inscription_refuser' ins.pk %}" class="panel" data-confirm="Confirmer le refus de ce dossier ?">{% csrf_token %}
+      <h3>Refuser le dossier</h3>
+      <div class="form-grid one mt-sm">{% include "tontine/partials/form_fields.html" with form=form_refuser %}</div>
+      <div class="form-actions"><button class="btn btn-danger"><i class="fa-solid fa-xmark"></i>Refuser</button></div>
+    </form>
+    {% endif %}
+    {% if wa_validation %}
+    <div class="panel"><h3>Dossier validé 🎉</h3><p class="sub">Membre <a class="link" href="{% url 'membre_detail' ins.membre.pk %}">{{ ins.membre.matricule }}</a> · groupe {{ ins.membre.groupe }}</p>
+      <div class="form-actions" style="justify-content:flex-start"><a href="{{ wa_validation }}" target="_blank" rel="noopener" class="btn btn-wa"><i class="fa-brands fa-whatsapp"></i>Notifier la validation</a><a href="{% url 'cotisations' %}?membre={{ ins.membre.pk }}" class="btn btn-navy"><i class="fa-solid fa-plus"></i>Première cotisation</a></div></div>
+    {% endif %}
+    {% if wa_refus %}
+    <div class="panel"><h3>Dossier refusé</h3><p class="sub">Prévenez la personne avec le motif.</p>
+      <div class="form-actions" style="justify-content:flex-start"><a href="{{ wa_refus }}" target="_blank" rel="noopener" class="btn btn-wa"><i class="fa-brands fa-whatsapp"></i>Notifier le refus</a></div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

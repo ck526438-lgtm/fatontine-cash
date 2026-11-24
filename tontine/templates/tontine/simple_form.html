@@ -1,0 +1,8 @@
+{% extends "tontine/base.html" %}
+{% block title %}{{ titre }}{% endblock %}{% block heading %}{{ titre }}{% endblock %}
+{% block content %}
+<form method="post" class="panel" style="max-width:820px">{% csrf_token %}
+  <div class="form-grid two">{% include "tontine/partials/form_fields.html" %}</div>
+  <div class="form-actions"><a href="{{ retour }}" class="btn btn-ghost">Annuler</a><button class="btn btn-navy"><i class="fa-solid fa-check"></i>Enregistrer</button></div>
+</form>
+{% endblock %}

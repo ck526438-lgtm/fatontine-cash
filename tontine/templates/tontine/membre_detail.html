@@ -1,0 +1,48 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}{{ m.nom_complet }}{% endblock %}{% block heading %}{{ m.nom_complet }}{% endblock %}
+{% block actions %}<a href="{% url 'membre_modifier' m.pk %}" class="btn btn-ghost"><i class="fa-solid fa-pen"></i>Modifier</a>{% endblock %}
+{% block content %}
+<div class="grid g-4">
+  <div class="kpi kpi-gold" style="min-height:118px"><div class="label">Total versé</div><div class="value" style="font-size:24px">{{ verse|fcfa }}</div></div>
+  <div class="kpi kpi-pearl" style="min-height:118px"><div class="label">Attendu à ce jour</div><div class="value" style="font-size:24px">{{ attendu|fcfa }}</div></div>
+  <div class="kpi {% if ecart > 0 %}kpi-amber{% else %}kpi-pearl{% endif %}" style="min-height:118px"><div class="label">Écart</div><div class="value" style="font-size:24px">{% if ecart > 0 %}−{{ ecart|fcfa }}{% elif ecart < 0 %}+{{ ecart|absolu|fcfa }}{% else %}À jour{% endif %}</div><div class="meta">{% if jours_retard %}{{ jours_retard }} jour{{ jours_retard|pluralize }} de retard{% endif %}</div></div>
+  <div class="kpi kpi-navy" style="min-height:118px"><div class="label">Tour de réception</div><div class="value" style="font-size:24px">{% if tour %}#{{ tour.rang }}{% else %}—{% endif %}</div><div class="meta">{% if tour %}{{ tour.date_prevue|date:"d/m/Y" }} · {{ tour.montant|fcfa }} · {{ tour.get_statut_display }}{% endif %}</div></div>
+</div>
+<div class="grid g-form mt">
+  <div class="stack">
+    <div class="panel">
+      <div class="row"><h3>Dossier</h3>{% include "tontine/partials/statut_badge.html" with s=m.statut label=m.get_statut_display %}</div>
+      <div class="mt-sm">
+        <div class="kv"><span>Matricule</span><b class="mono">{{ m.matricule }}</b></div>
+        <div class="kv"><span>Groupe</span><b><a class="link" href="{% url 'groupe_detail' m.groupe.pk %}">{{ m.groupe }}</a></b></div>
+        <div class="kv"><span>Formule</span><b>{{ m.groupe.formule }}</b></div>
+        <div class="kv"><span>Téléphone</span><b>{{ m.telephone }}</b></div>
+        <div class="kv"><span>Adresse</span><b>{{ m.adresse }}</b></div>
+        <div class="kv"><span>Témoin</span><b>{{ m.temoin_nom }} · {{ m.temoin_telephone }}</b></div>
+        <div class="kv"><span>Pièce</span><b><a class="link" href="{% url 'inscription_detail' m.inscription.pk %}">{{ m.inscription.get_type_piece_display }} {{ m.inscription.numero_piece }} →</a></b></div>
+        {% if m.motif_statut %}<div class="kv"><span>Motif statut</span><b>{{ m.motif_statut }}</b></div>{% endif %}
+      </div>
+      <div class="form-actions" style="justify-content:flex-start">
+        {% if m.statut == "actif" %}<a href="{% url 'cotisations' %}?membre={{ m.pk }}" class="btn btn-navy btn-sm"><i class="fa-solid fa-plus"></i>Encaisser</a>{% endif %}
+        <a href="{{ wa_rappel }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Rappel</a>
+        {% if wa_retard %}<a href="{{ wa_retard }}" target="_blank" rel="noopener" class="btn btn-wa btn-sm"><i class="fa-brands fa-whatsapp"></i>Alerte retard</a>{% endif %}
+        <a href="{% url 'export' 'membre' 'pdf' %}?membre={{ m.pk }}" target="_blank" class="btn btn-ghost btn-sm"><i class="fa-solid fa-file-pdf"></i>Historique</a>
+      </div>
+    </div>
+    <form method="post" action="{% url 'membre_statut' m.pk %}" class="panel" data-confirm="Confirmer le changement de statut ?">{% csrf_token %}
+      <h3>Suspendre, réactiver ou clôturer</h3>
+      <div class="form-grid one mt-sm">{% include "tontine/partials/form_fields.html" with form=form_statut %}</div>
+      <div class="form-actions"><button class="btn btn-ghost">Mettre à jour le statut</button></div>
+    </form>
+  </div>
+  <div class="panel flush">
+    <div class="panel-head"><h3>Historique des paiements</h3><span class="badge b-navy">{{ cotisations|length }} opération{{ cotisations|length|pluralize }}</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Reçu</th><th>Mode</th><th class="num">Jours</th><th class="num">Montant</th></tr></thead>
+      <tbody>{% for c in cotisations %}<tr class="{% if c.annulee %}is-cancelled{% endif %}"><td>{{ c.date_paiement|date:"d/m/Y" }}</td><td><a class="link mono" href="{% url 'recu' c.pk %}">{{ c.numero_recu }}</a></td>
+        <td>{% if c.mode == "wave" %}<span class="badge b-wave">Wave · {{ c.id_wave }}</span>{% else %}<span class="badge b-mute">Espèces</span>{% endif %}</td><td class="num">{{ c.nb_jours }}</td><td class="num pos">{{ c.montant|fcfa }}</td></tr>
+      {% empty %}<tr><td colspan="5" class="empty">Aucun paiement enregistré.</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "tontine/base.html" %}
+{% block title %}Journal d'audit{% endblock %}{% block heading %}Journal d'audit{% endblock %}
+{% block content %}
+<div class="panel flush">
+  <div class="panel-head"><div><h3>Historique des opérations administratives</h3><p class="sub">Inaltérable depuis l'interface : connexions, validations, paiements, annulations, changements d'ordre, consultations de pièces.</p></div>
+    <div class="chips">
+      <a class="chip {% if not action %}is-active{% endif %}" href="?">Tout</a>
+      <a class="chip {% if action == 'connexion' %}is-active{% endif %}" href="?action=connexion">Connexions</a>
+      <a class="chip {% if action == 'inscription' %}is-active{% endif %}" href="?action=inscription">Inscriptions</a>
+      <a class="chip {% if action == 'cotisation' %}is-active{% endif %}" href="?action=cotisation">Cotisations</a>
+      <a class="chip {% if action == 'tour' %}is-active{% endif %}" href="?action=tour">Tours</a>
+      <a class="chip {% if action == 'piece' %}is-active{% endif %}" href="?action=piece">Pièces</a></div></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Date</th><th>Action</th><th>Objet</th><th>Détails</th><th>IP</th></tr></thead>
+    <tbody>{% for e in entrees %}<tr><td style="white-space:nowrap">{{ e.le|date:"d/m/Y H:i:s" }}</td><td><span class="badge {% if 'echec' in e.action or 'bloquee' in e.action or 'annulee' in e.action %}b-bad{% else %}b-mute{% endif %} mono">{{ e.action }}</span></td><td class="mono">{{ e.objet }}</td><td>{{ e.details }}</td><td class="small mono">{{ e.ip|default:"" }}</td></tr>
+    {% empty %}<tr><td colspan="5" class="empty">Aucune entrée.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

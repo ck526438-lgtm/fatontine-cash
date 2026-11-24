@@ -1,0 +1,4 @@
+{% extends "registration/auth_base.html" %}
+{% block title %}Mot de passe modifié{% endblock %}
+{% block auth %}<div class="callout info"><i class="fa-solid fa-circle-check" style="color:var(--ok)"></i><div>Votre mot de passe a été modifié.</div></div>
+<a href="{% url 'login' %}" class="btn btn-navy btn-block" style="margin-top:14px;padding:14px">Se connecter</a>{% endblock %}

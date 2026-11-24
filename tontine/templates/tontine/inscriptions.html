@@ -1,0 +1,33 @@
+{% extends "tontine/base.html" %}
+{% block title %}Inscriptions{% endblock %}{% block heading %}Inscriptions &amp; dossiers{% endblock %}
+{% block content %}
+<div class="row" style="margin-bottom:18px;flex-wrap:wrap">
+  <div class="segmented">
+    {% for code, label in statuts %}<a href="?statut={{ code }}" class="{% if statut == code %}is-active{% endif %}">{{ label }}<span class="n">{% for k, n in compteurs.items %}{% if k == code %}{{ n }}{% endif %}{% endfor %}</span></a>{% endfor %}
+    <a href="?statut=tous" class="{% if statut == 'tous' %}is-active{% endif %}">Tous</a>
+  </div>
+  <a href="{% url 'inscription_nouvelle' %}" class="btn btn-navy"><i class="fa-solid fa-user-plus"></i>Nouvelle inscription</a>
+</div>
+<div class="grid g-2">
+  {% for ins in inscriptions %}
+  <a href="{% url 'inscription_detail' ins.pk %}" class="panel" style="display:block">
+    <div class="row" style="align-items:flex-start">
+      <div class="row" style="gap:12px;justify-content:flex-start">
+        <span class="avatar navy" style="border-radius:16px">{{ ins.initiales }}</span>
+        <div><h3>{{ ins.nom_complet }}</h3><p class="sub">{{ ins.get_sexe_display }} · {{ ins.adresse }}</p></div>
+      </div>
+      {% include "tontine/partials/statut_badge.html" with s=ins.statut label=ins.get_statut_display %}
+    </div>
+    <div class="panel" style="padding:12px 14px;margin-top:14px;background:rgba(255,255,255,.55);box-shadow:none">
+      <div class="kv"><span>Téléphone</span><b>{{ ins.telephone }}</b></div>
+      <div class="kv"><span>Pièce</span><b>{{ ins.get_type_piece_display }} · {{ ins.numero_piece }}</b></div>
+      <div class="kv"><span>Témoin</span><b>{{ ins.temoin_nom }} ({{ ins.temoin_telephone }})</b></div>
+      <div class="kv"><span>Formule</span><b class="gold" style="color:var(--gold-600)">{{ ins.formule_souhaitee }}</b></div>
+    </div>
+    <p class="small" style="margin-top:10px">{{ ins.reference }} · reçu le {{ ins.cree_le|date:"d/m/Y à H:i" }}</p>
+  </a>
+  {% empty %}
+  <div class="panel span-all">{% url 'inscription_nouvelle' as u %}{% include "tontine/partials/empty.html" with icon="fa-id-card" titre="Aucun dossier dans cette catégorie" texte="Saisissez le dossier d'un futur membre : pièce d'identité, photo, témoin et consentement ARTCI. Vous le validerez ensuite manuellement." lien=u lien_texte="Créer une fiche d'inscription" %}</div>
+  {% endfor %}
+</div>
+{% endblock %}

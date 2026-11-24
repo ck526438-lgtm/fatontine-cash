@@ -1,0 +1,70 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Cotisations{% endblock %}{% block heading %}Cotisations &amp; reçus{% endblock %}
+{% block content %}
+<div class="grid g-form">
+  <form method="post" class="panel" id="payForm" novalidate>{% csrf_token %}
+    <h3>Enregistrer un paiement</h3>
+    <p class="sub" style="margin-bottom:16px">Génère un reçu PDF numéroté, partageable sur WhatsApp.</p>
+    {% if aucun_membre %}
+      <div class="callout info"><i class="fa-solid fa-circle-info"></i><div>Aucun membre actif. <a class="link" href="{% url 'inscriptions' %}">Validez d'abord un dossier d'inscription.</a></div></div>
+    {% else %}
+    {% if form.non_field_errors %}<div class="callout bad" style="margin-bottom:12px"><i class="fa-solid fa-circle-exclamation"></i><div>{{ form.non_field_errors|join:" " }}</div></div>{% endif %}
+    <div class="form-grid one">
+      {% include "tontine/partials/field.html" with field=form.membre %}
+      <div class="form-grid two" style="gap:12px">
+        {% include "tontine/partials/field.html" with field=form.nb_jours %}
+        <div class="field"><label for="montantAffiche">Montant (FCFA)</label><input id="montantAffiche" class="g-input" readonly value="—"></div>
+      </div>
+      <div class="form-grid two" style="gap:12px">
+        {% include "tontine/partials/field.html" with field=form.date_paiement %}
+        {% include "tontine/partials/field.html" with field=form.mode %}
+      </div>
+      <div class="wave-box" id="waveBox">{% include "tontine/partials/field.html" with field=form.id_wave %}</div>
+      {% include "tontine/partials/field.html" with field=form.note %}
+      {% include "tontine/partials/field.html" with field=form.verifie %}
+    </div>
+    <button class="btn btn-navy btn-block" style="margin-top:16px;padding:14px"><i class="fa-solid fa-receipt"></i>Valider &amp; générer le reçu</button>
+    {% endif %}
+  </form>
+
+  <div class="stack">
+    <div class="panel">
+      <div class="row" style="margin-bottom:12px"><h4><span class="badge b-bad" style="padding:0;width:10px;height:10px;background:#ef4444;border:0"></span> Membres en retard</h4><a class="link" href="{% url 'export' 'retards' 'pdf' %}" target="_blank">Rapport complet</a></div>
+      <div class="grid g-2" style="gap:10px">
+        {% for r in retards %}
+        <div class="item"><span><b class="strong">{{ r.membre.nom_complet }}</b><br><span class="small neg">{{ r.ecart|fcfa }} · {{ r.jours }} j</span></span>
+          <a href="?membre={{ r.membre.pk }}#payForm" class="btn btn-navy btn-sm">Encaisser</a></div>
+        {% empty %}<p class="small span-all">Aucun retard : tous les membres actifs sont à jour.</p>{% endfor %}
+      </div>
+    </div>
+    <div class="panel flush">
+      <form class="panel-head" method="get"><h3>Journal des cotisations</h3>
+        <div class="row" style="gap:8px"><input type="search" name="q" value="{{ q }}" class="g-input" style="width:200px;border-radius:999px" placeholder="Reçu, réf., ID Wave…"><span class="badge b-navy" style="padding:6px 12px">{{ total|fcfa }}</span></div></form>
+      <div class="table-wrap" style="max-height:460px"><table>
+        <thead><tr><th>Reçu / date</th><th>Membre</th><th>Mode</th><th class="num">Montant</th><th class="num">PDF</th></tr></thead>
+        <tbody>{% for c in cotisations %}<tr class="{% if c.annulee %}is-cancelled{% endif %}">
+          <td><a href="{% url 'recu' c.pk %}" class="strong mono">{{ c.numero_recu }}</a><div class="small">{{ c.date_paiement|date:"d/m/Y" }}</div></td>
+          <td><b>{{ c.membre.nom_complet }}</b><div class="small">{{ c.groupe }}</div></td>
+          <td>{% if c.mode == "wave" %}<span class="badge b-wave">Wave</span><div class="small mono">{{ c.id_wave }}</div>{% else %}<span class="badge b-mute">Espèces</span>{% endif %}</td>
+          <td class="num pos">{{ c.montant|fcfa }}</td>
+          <td class="num"><a href="{% url 'recu_pdf' c.pk %}" target="_blank" class="btn btn-navy btn-sm" aria-label="Reçu PDF"><i class="fa-solid fa-file-pdf"></i></a></td>
+        </tr>{% empty %}<tr><td colspan="5" class="empty">Aucune cotisation enregistrée. Utilisez le formulaire pour saisir le premier versement Wave ou espèces.</td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+{{ tarifs|json_script:"tarifs" }}
+<script>
+(function(){
+  const tarifs = JSON.parse(document.getElementById('tarifs').textContent);
+  const m = document.getElementById('id_membre'), j = document.getElementById('id_nb_jours'),
+        mode = document.getElementById('id_mode'), out = document.getElementById('montantAffiche'), box = document.getElementById('waveBox');
+  if(!m) return;
+  const fmt = n => new Intl.NumberFormat('fr-FR').format(n).replace(/ | /g,' ') + ' FCFA';
+  function maj(){ const t = tarifs[m.value]; out.value = t ? fmt(t * (parseInt(j.value)||1)) : '—'; box.style.display = mode.value === 'wave' ? '' : 'none'; }
+  [m,j,mode].forEach(e => e.addEventListener('change', maj)); j.addEventListener('input', maj); maj();
+})();
+</script>
+{% endblock %}

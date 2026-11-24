@@ -1,0 +1,80 @@
+{% load static fcfa %}<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0A192F">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Tableau de bord{% endblock %} — FATONTINE CASH</title>
+  <link rel="icon" href="{% static 'tontine/img/logo.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'tontine/fonts/plus-jakarta-sans-latin-700-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'tontine/vendor/fontawesome/css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'tontine/css/glass.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% block shell %}
+<div class="shell">
+  <div class="backdrop" id="backdrop" onclick="toggleMenu()"></div>
+  <aside class="sidebar" id="sidebar" aria-label="Navigation principale">
+    <div class="brand row">
+      <div>
+        <h1>FATONTINE <span>CASH</span></h1>
+        <p>La tontine, en toute simplicité</p>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="{% url 'dashboard' %}" class="{% actif 'dashboard' %}"><i class="fa-solid fa-house"></i>Tableau de bord</a>
+      <a href="{% url 'inscriptions' %}" class="{% actif 'inscriptions' 'inscription_nouvelle' 'inscription_detail' %}"><i class="fa-solid fa-file-signature"></i>Inscriptions{% if nb_dossiers_attente %}<span class="count">{{ nb_dossiers_attente }}</span>{% endif %}</a>
+      <a href="{% url 'membres' %}" class="{% actif 'membres' 'membre_detail' 'membre_modifier' %}"><i class="fa-solid fa-user-group"></i>Membres</a>
+      <a href="{% url 'groupes' %}" class="{% actif 'groupes' 'groupe_detail' 'groupe_nouveau' 'groupe_modifier' %}"><i class="fa-solid fa-layer-group"></i>Groupes</a>
+      <a href="{% url 'cotisations' %}" class="{% actif 'cotisations' 'recu' %}"><i class="fa-solid fa-wallet"></i>Cotisations &amp; reçus</a>
+      <a href="{% url 'beneficiaires' %}" class="{% actif 'beneficiaires' 'tour_detail' %}"><i class="fa-solid fa-hand-holding-heart"></i>Bénéficiaires</a>
+      <a href="{% url 'transactions' %}" class="{% actif 'transactions' %}"><i class="fa-solid fa-arrow-right-arrow-left"></i>Transactions</a>
+      <a href="{% url 'notifications' %}" class="{% actif 'notifications' %}"><i class="fa-brands fa-whatsapp"></i>Notifications</a>
+      <a href="{% url 'rapports' %}" class="{% actif 'rapports' %}"><i class="fa-solid fa-chart-column"></i>Rapports</a>
+      <div class="nav-label">Configuration</div>
+      <a href="{% url 'formules' %}" class="{% actif 'formules' %}"><i class="fa-solid fa-coins"></i>Formules</a>
+      <a href="{% url 'parametres' %}" class="{% actif 'parametres' 'password_change' %}"><i class="fa-solid fa-sliders"></i>Paramètres</a>
+      <a href="{% url 'journal' %}" class="{% actif 'journal' %}"><i class="fa-solid fa-clock-rotate-left"></i>Journal d'audit</a>
+    </nav>
+    <div class="profile">
+      <div class="avatar">{{ user.first_name|default:user.username|slice:":2"|upper }}</div>
+      <div><b>{{ user.first_name|default:user.username }}</b><span class="tag-admin">Admin</span></div>
+      <form method="post" action="{% url 'logout' %}" style="margin-left:auto">{% csrf_token %}
+        <button class="icon-btn" title="Déconnexion sécurisée" aria-label="Déconnexion"><i class="fa-solid fa-power-off"></i></button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="row" style="justify-content:flex-start">
+        <button class="menu-toggle" onclick="toggleMenu()" aria-label="Ouvrir le menu"><i class="fa-solid fa-bars"></i></button>
+        <h2>{% block heading %}Tableau de bord{% endblock %}<small>/</small><em>{{ user.first_name|default:"Fatima" }}</em></h2>
+      </div>
+      <div class="actions">
+        {% block actions %}{% endblock %}
+        <a href="{% url 'inscriptions' %}" class="bell" title="Dossiers en attente" aria-label="Dossiers en attente"><i class="fa-regular fa-bell"></i>{% if nb_dossiers_attente %}<span class="dot"></span>{% endif %}</a>
+        <a href="{% url 'cotisations' %}" class="btn btn-navy hide-sm"><i class="fa-solid fa-plus"></i>Encaisser</a>
+      </div>
+    </header>
+    <div class="fade-in">{% block content %}{% endblock %}</div>
+  </main>
+</div>
+{% endblock %}
+
+{% if messages %}
+<div class="toasts" role="status">
+  {% for m in messages %}
+  <div class="toast {% if m.tags == 'error' %}error{% endif %}"><i class="fa-solid {% if m.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i><span>{{ m }}</span></div>
+  {% endfor %}
+</div>
+{% endif %}
+<script>
+  function toggleMenu(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('backdrop').classList.toggle('open');}
+  document.querySelectorAll('form[data-confirm]').forEach(f=>f.addEventListener('submit',e=>{if(!confirm(f.dataset.confirm))e.preventDefault();}));
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

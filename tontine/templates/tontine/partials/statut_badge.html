@@ -1,0 +1,4 @@
+{% if s == "en_attente" or s == "programme" or s == "ouvert" %}<span class="badge b-warn">{{ label }}</span>
+{% elif s == "validee" or s == "actif" or s == "distribue" or s == "en_cours" %}<span class="badge b-ok">{{ label }}</span>
+{% elif s == "refusee" or s == "suspendu" %}<span class="badge b-bad">{{ label }}</span>
+{% else %}<span class="badge b-mute">{{ label }}</span>{% endif %}

@@ -1,0 +1,16 @@
+{% extends "tontine/base.html" %}
+{% block shell %}
+<div class="auth-wrap">
+  <div class="auth fade-in">
+    <div class="auth-head">
+      <div class="logo-mark"><i class="fa-solid fa-coins"></i></div>
+      <h1>FATONTINE <span class="gold">CASH</span></h1>
+      <p>La tontine, en toute simplicité.</p>
+      <div class="secure"><i class="fa-solid fa-circle"></i> Espace administratrice · Côte d'Ivoire (FCFA)</div>
+    </div>
+    <div class="auth-body">{% block auth %}{% endblock %}
+      <div class="auth-foot"><span><i class="fa-solid fa-shield-halved" style="color:var(--ok)"></i> Connexion chiffrée · Loi n° 2013-450</span><span>V1.0</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

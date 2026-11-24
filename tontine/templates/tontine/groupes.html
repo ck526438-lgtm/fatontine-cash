@@ -1,0 +1,27 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Groupes{% endblock %}{% block heading %}Groupes{% endblock %}
+{% block content %}
+<div class="panel-dark">
+  <div class="row" style="flex-wrap:wrap;margin-bottom:16px">
+    <div><span class="small" style="color:var(--gold-300);font-weight:800;letter-spacing:.12em;text-transform:uppercase">Grille officielle</span>
+      <h3 style="font-size:16px">Les formules de cotisation (cycles de {{ parametres.taille_groupe }} membres)</h3></div>
+    <div class="row" style="gap:8px"><a href="{% url 'formules' %}" class="btn btn-ghost btn-sm"><i class="fa-solid fa-pen"></i>Configurer</a><a href="{% url 'groupe_nouveau' %}" class="btn btn-gold btn-sm"><i class="fa-solid fa-plus"></i>Nouveau groupe</a></div>
+  </div>
+  <div class="grid g-4" style="gap:12px">
+    {% for f in formules %}<div class="formula"><small>Cotisation / jour</small><b>{{ f.cotisation_journaliere|fcfa }}</b><div>Reçoit : <strong>{{ f.reception_annoncee|fcfa }}</strong></div></div>{% endfor %}
+  </div>
+</div>
+<div class="grid g-2 mt">
+  {% for g in groupes %}
+  <a href="{% url 'groupe_detail' g.pk %}" class="panel" style="display:block">
+    <div class="row" style="align-items:flex-start"><div><h3 style="font-size:16px">{{ g.nom }}</h3><p class="sub">Démarrage le {{ g.date_demarrage|date:"d/m/Y" }} · fin le {{ g.date_fin|date:"d/m/Y" }}</p></div>
+      <span class="badge b-navy">{{ g.formule.reception_annoncee|fcfa }}</span></div>
+    <div class="row mt-sm"><span class="small">{{ g.nb }}/{{ g.capacite }} membres · {{ g.formule.cotisation_journaliere|fcfa }}/jour</span>{% include "tontine/partials/statut_badge.html" with s=g.statut label=g.get_statut_display %}</div>
+    <div class="progress mt-sm"><span style="width:{{ g.progression }}%"></span></div>
+    <p class="small mt-sm">Progression du cycle : {{ g.progression }} % · tour {{ g.tour_courant }}/{{ g.capacite }}</p>
+  </a>
+  {% empty %}
+  <div class="panel span-all">{% url 'groupe_nouveau' as u %}{% include "tontine/partials/empty.html" with icon="fa-layer-group" titre="Aucun groupe créé pour le moment" texte="Créez votre premier groupe : choisissez une formule et une date de démarrage." lien=u lien_texte="Créer mon premier groupe" %}</div>
+  {% endfor %}
+</div>
+{% endblock %}

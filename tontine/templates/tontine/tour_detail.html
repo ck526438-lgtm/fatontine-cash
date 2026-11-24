@@ -1,0 +1,40 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Tour {{ t.rang }}{% endblock %}{% block heading %}Tour n°{{ t.rang }} · {{ t.groupe }}{% endblock %}
+{% block content %}
+<div class="grid g-form">
+  <div class="stack">
+    <div class="kpi kpi-navy">
+      <div class="row"><span class="pill">{{ t.get_statut_display }}</span><div class="ico"><i class="fa-solid fa-hand-holding-heart"></i></div></div>
+      <div><div class="label">{{ t.membre.nom_complet }}</div><div class="value">{{ t.montant|fcfa }}</div><div class="meta">Prévu le {{ t.date_prevue|date:"l d F Y" }} · réf. {{ t.reference }}</div></div>
+    </div>
+    <div class="panel">
+      {% if t.statut == "distribue" %}
+        <div class="kv"><span>Remis le</span><b>{{ t.distribue_le|date:"d/m/Y H:i" }}</b></div>
+        <div class="kv"><span>Mode</span><b>{{ t.get_mode_remise_display }}{% if t.id_wave_remise %} · {{ t.id_wave_remise }}{% endif %}</b></div>
+        <div class="kv"><span>Réception confirmée</span><b>{% if t.reception_confirmee %}<span class="pos">Oui</span>{% else %}<span class="neg">En attente</span>{% endif %}</b></div>
+        {% if t.note %}<div class="kv"><span>Note</span><b>{{ t.note }}</b></div>{% endif %}
+        {% if not t.reception_confirmee %}<form method="post" class="form-actions">{% csrf_token %}<input type="hidden" name="action" value="confirmer"><button class="btn btn-ok"><i class="fa-solid fa-check-double"></i>Le membre confirme la réception</button></form>{% endif %}
+      {% else %}
+        <h3>Enregistrer la distribution</h3>
+        <form method="post" class="mt-sm" data-confirm="Confirmer la remise de {{ t.montant|fcfa }} à {{ t.membre.nom_complet }} ?">{% csrf_token %}<input type="hidden" name="action" value="distribuer">
+          <div class="form-grid two">{% include "tontine/partials/form_fields.html" with form=form_dist %}</div>
+          <div class="form-actions"><a href="{{ wa }}" target="_blank" rel="noopener" class="btn btn-wa"><i class="fa-brands fa-whatsapp"></i>Prévenir le membre</a><button class="btn btn-ok"><i class="fa-solid fa-hand-holding-dollar"></i>Remettre {{ t.montant|fcfa }}</button></div>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  <div class="stack">
+    {% if t.statut == "programme" %}
+    <form method="post" class="panel">{% csrf_token %}<input type="hidden" name="action" value="rang">
+      <h3>Modifier l'ordre de passage</h3>
+      <p class="sub" style="margin-bottom:12px">Si le rang visé est occupé, les deux membres échangent leur tour. Les dates sont recalculées automatiquement.</p>
+      <div class="form-grid one">{% include "tontine/partials/form_fields.html" with form=form_rang %}</div>
+      <div class="form-actions"><button class="btn btn-navy"><i class="fa-solid fa-arrows-rotate"></i>Enregistrer le changement</button></div>
+    </form>
+    {% endif %}
+    <div class="panel"><h4 style="margin-bottom:10px">Historique</h4>
+      <div class="stack-sm">{% for c in historique %}<div class="item"><span>#{{ c.ancien_rang }} → #{{ c.nouveau_rang }} : {{ c.justification }}</span><span class="small">{{ c.le|date:"d/m/Y" }}</span></div>{% empty %}<p class="small">Aucun changement.</p>{% endfor %}</div>
+    </div>
+  </div>
+</div>
+{% endblock %}

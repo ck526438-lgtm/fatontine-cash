@@ -1,0 +1,48 @@
+{% extends "tontine/base.html" %}{% load fcfa %}
+{% block title %}Reçu {{ c.numero_recu }}{% endblock %}{% block heading %}Reçu {{ c.numero_recu }}{% endblock %}
+{% block content %}
+<div class="grid g-form" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)">
+  <div class="receipt">
+    <div class="receipt-head">
+      <div class="row" style="gap:12px;justify-content:flex-start"><span class="logo-mark"><i class="fa-solid fa-coins"></i></span><div><b style="font-size:16px">FATONTINE <span class="gold">CASH</span></b><div style="font-size:10.5px;color:var(--gold-200)">La tontine, en toute simplicité.</div></div></div>
+      <div style="text-align:right"><span class="badge" style="background:var(--gold-500);color:var(--navy-900)">REÇU OFFICIEL</span><div class="mono" style="margin-top:6px">{{ c.numero_recu }}</div></div>
+    </div>
+    <div class="receipt-body">
+      <div class="amount"><span class="small" style="font-weight:800;letter-spacing:.1em">MONTANT ENCAISSÉ</span><b {% if c.annulee %}style="color:var(--bad);text-decoration:line-through"{% endif %}>{{ c.montant|fcfa }}</b>
+        {% if c.annulee %}<span class="badge b-bad">OPÉRATION ANNULÉE</span>{% else %}<span class="badge b-ok"><i class="fa-solid fa-circle-check"></i>PAIEMENT VÉRIFIÉ PAR FATIMA</span>{% endif %}</div>
+      <div class="mt">
+        <div class="kv"><span>Membre</span><b>{{ c.membre.nom_complet }}</b></div>
+        <div class="kv"><span>Téléphone</span><b>{{ c.membre.telephone }}</b></div>
+        <div class="kv"><span>Groupe</span><b>{{ c.groupe }}</b></div>
+        <div class="kv"><span>Formule</span><b style="color:var(--gold-600)">{{ c.groupe.formule }}</b></div>
+        <div class="kv"><span>Jours couverts</span><b>{{ c.nb_jours }}</b></div>
+        <div class="kv"><span>Date</span><b>{{ c.date_paiement|date:"d/m/Y" }}</b></div>
+        <div class="kv"><span>Mode</span><b class="mono">{{ c.get_mode_display }}{% if c.id_wave %} · {{ c.id_wave }}{% endif %}</b></div>
+        <div class="kv"><span>Réf. opération</span><b class="mono">{{ c.reference }}</b></div>
+      </div>
+      <div class="row mt"><div class="small"><b class="strong">Administratrice : {{ user.first_name|default:"Fatima" }}</b><br>Côte d'Ivoire · FCFA</div><div class="stamp {% if c.annulee %}bad{% endif %}">{% if c.annulee %}ANNULÉ{% else %}CERTIFIÉ<br>PAYÉ{% endif %}</div></div>
+    </div>
+  </div>
+  <div class="stack">
+    <div class="panel">
+      <h3>Partager le reçu</h3>
+      <p class="sub">Téléchargez le PDF, puis envoyez le message WhatsApp au membre (joignez le PDF si besoin).</p>
+      <div class="form-actions" style="justify-content:flex-start">
+        <a href="{% url 'recu_pdf' c.pk %}" target="_blank" class="btn btn-navy"><i class="fa-solid fa-file-pdf"></i>Reçu PDF</a>
+        <a href="{{ wa }}" target="_blank" rel="noopener" class="btn btn-wa"><i class="fa-brands fa-whatsapp"></i>Envoyer sur WhatsApp</a>
+        <a href="{% url 'cotisations' %}" class="btn btn-ghost">Nouvel encaissement</a>
+      </div>
+    </div>
+    {% if not c.annulee %}
+    <form method="post" action="{% url 'cotisation_annuler' c.pk %}" class="panel" data-confirm="Annuler définitivement cette opération ? Elle restera visible, barrée, dans l'historique.">{% csrf_token %}
+      <h3>Corriger une erreur</h3>
+      <p class="sub" style="margin-bottom:12px">Rien n'est supprimé : l'opération est annulée avec un motif et une écriture de correction est créée.</p>
+      <div class="form-grid one">{% include "tontine/partials/form_fields.html" with form=form_annuler %}</div>
+      <div class="form-actions"><button class="btn btn-danger"><i class="fa-solid fa-ban"></i>Annuler l'opération</button></div>
+    </form>
+    {% else %}
+    <div class="panel"><div class="callout bad"><i class="fa-solid fa-ban"></i><div>Annulée le {{ c.annulee_le|date:"d/m/Y H:i" }} : {{ c.motif_annulation }}</div></div></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

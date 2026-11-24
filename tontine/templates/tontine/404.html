@@ -1,0 +1,3 @@
+{% extends "tontine/base.html" %}
+{% block title %}Page introuvable{% endblock %}{% block heading %}Page introuvable{% endblock %}
+{% block content %}<div class="panel">{% include "tontine/partials/empty.html" with icon="fa-compass" titre="Cette page n'existe pas" texte="Le lien est peut-être incorrect ou l'élément a été déplacé." lien="/" lien_texte="Retour au tableau de bord" %}</div>{% endblock %}
